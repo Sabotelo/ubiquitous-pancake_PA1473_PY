@@ -4,7 +4,7 @@ import __init__
 
 def main():
     print("XD Trolololololololo\n"*100)
-    #jag är här
+    #jag är här hahahah
 
     return 0
 

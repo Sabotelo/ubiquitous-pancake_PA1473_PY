@@ -3,6 +3,7 @@ import sys
 import __init__
 
 def main():
+    print("XD Trolololololololo\n"*100)
     return 0
 
 if __name__ == '__main__':

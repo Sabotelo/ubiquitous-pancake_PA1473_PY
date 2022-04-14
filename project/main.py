@@ -16,9 +16,9 @@ import __init__
 def follow_line(speed: int, light_sensor: ColorSensor, color: Color, robot: DriveBase) -> None:
 
     if light_sensor.color() == color:
-        robot.drive(speed, 45)
-    else:
         robot.drive(speed, -45)
+    else:
+        robot.drive(speed, 45)
     return
 
 
@@ -53,6 +53,25 @@ def leave_area():
     pass
 
 
+def get_color_object(ev3: EV3Brick, available_colors: List(Color)) -> Color:
+    """ask the user for the color of object
+    """
+    choosen_color = None
+    for color in available_colors:
+        ev3.screen.clear()
+        ev3.screen.print("Press down for: \n"+str(color)[
+                         6:]+"\nPress up to\ncontinue")
+        wait(500)
+
+        while Button.UP not in ev3.buttons.pressed():
+            if Button.DOWN in ev3.buttons.pressed():
+                ev3.screen.clear()
+                return color
+
+    ev3.screen.clear()
+    return get_color_object(ev3, available_colors)
+
+
 def main():
     ev3 = EV3Brick()
 
@@ -71,11 +90,14 @@ def main():
     color = Color.YELLOW
     run = True
     speed = 70
+    collision_distance = 200
+    available_colors = [Color.BLACK, Color.BLUE,
+                        Color.BROWN, Color.RED, Color.YELLOW]
 
     while run:
 
         follow_line(speed, light_sensor, color, robot)
-        collision_dedector(robot, ultrasonic_sensor, 100, ev3)
+        collision_dedector(robot, ultrasonic_sensor, collision_distance, ev3)
 
         if Button.CENTER in ev3.buttons.pressed():
             run = False

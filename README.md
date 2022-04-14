@@ -11,5 +11,8 @@
 ## User stories
 -- Extend the list with user stories. Also use the marking method for complete and incomplete user stories --
 
-- [ ] This is a user story the is incomplete 
-- [X] This is a user story that is complete
+- [X]Have trucks avoid collisions of trucks
+- [X]Have a truck follow a predetermined path
+- [X]Specify what color of object that the truck shall collect
+- [ ]Exit the specified area in a safe manner.
+- [ ]Have a truck pickup an item (pallet)

@@ -1,15 +1,19 @@
 #!/usr/bin/env pybricks-micropython
-import sys
-import __init__
 
+from pybricks import robotics
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor, UltrasonicSensor)
+from pybricks.ev3devices import (
+    Motor, TouchSensor, ColorSensor, UltrasonicSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
 from pybricks.media.ev3dev import SoundFile, ImageFile
 
-def follow_line(speed: int, light_sensor: ColorSensor,color: Color, robot: DriveBase) -> None:
+import sys
+import __init__
+
+
+def follow_line(speed: int, light_sensor: ColorSensor, color: Color, robot: DriveBase) -> None:
 
     if light_sensor.color() == color:
         robot.drive(speed, 45)
@@ -18,16 +22,14 @@ def follow_line(speed: int, light_sensor: ColorSensor,color: Color, robot: Drive
     return
 
 
-def object_detected(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_distance: int, ev3: EV3Brick) -> None:
+def collision_dedector(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_distance: int, ev3: EV3Brick) -> None:
 
     while ultra_sensor.distance() < min_distance:
         ev3.screen.clear()
         ev3.screen.print("Get out")
         robot.stop()
-        ev3.speaker.play_notes(["A2/8", "A2/8", "A2/8", "A3/16"])
         wait(10)
     return
-
 
 
 def move_to_pallet():
@@ -36,11 +38,13 @@ def move_to_pallet():
     """
     pass
 
+
 def pickup_pallet():
     """
     picks a item upp safe
     """
     pass
+
 
 def leave_area():
     """
@@ -49,31 +53,35 @@ def leave_area():
     pass
 
 
-
 def main():
     ev3 = EV3Brick()
-    left_drive = Motor(Port.C)
-    right_drive = Motor(Port.B)
-    crane_motor = Motor(Port.A)
-    front_button =TouchSensor(Port.S1)
-    light_sensor = ColorSensor( Port.S3)
-    ultrasonic_sensor =ultrasonic_sensor( Port.S4)
+
+    left_drive = Motor(
+        Port.C, positive_direction=Direction.COUNTERCLOCKWISE, gears=[12, 20])
+    right_drive = Motor(
+        Port.B, positive_direction=Direction.COUNTERCLOCKWISE, gears=[12, 20])
+    crane_drive = Motor(
+        Port.A, positive_direction=Direction.CLOCKWISE, gears=[14, 36])
     robot = DriveBase(left_drive, right_drive,
                       wheel_diameter=47, axle_track=128)
-    #positive_direction = Direction.COUNTERCLOCKWISE, gears = [12, 20]
+    front_button = TouchSensor(Port.S1)
+    light_sensor = ColorSensor(Port.S3)
+    ultrasonic_sensor = UltrasonicSensor(Port.S4)
+
     color = Color.YELLOW
     run = True
     speed = 70
 
-
     while run:
-        follow_line(speed, light_sensor, color, robot)
 
-        if Button.CENTER in ev3.buttons.pressed() or light_sensor.color()==Color.BLACK:
+        follow_line(speed, light_sensor, color, robot)
+        collision_dedector(robot, ultrasonic_sensor, 100, ev3)
+
+        if Button.CENTER in ev3.buttons.pressed():
             run = False
 
-
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main())

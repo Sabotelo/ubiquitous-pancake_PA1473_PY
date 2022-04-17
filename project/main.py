@@ -1,5 +1,6 @@
 #!/usr/bin/env pybricks-micropython
 
+from turtle import speed
 from pybricks import robotics
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (
@@ -22,7 +23,7 @@ def follow_line(speed: int, light_sensor: ColorSensor, color: Color, robot: Driv
     return
 
 
-def collision_dedector(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_distance: int, ev3: EV3Brick) -> None:
+def collision_detector(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_distance: int, ev3: EV3Brick) -> None:
 
     while ultra_sensor.distance() < min_distance:
         ev3.screen.clear()
@@ -39,11 +40,29 @@ def move_to_pallet():
     pass
 
 
-def pickup_pallet():
+def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase):
+    """Function for inserting and lifting forks. 
+    Returns True if pallet is loaded, otherwise False.
+
+    Will currently just drive until it finds a pallet. Still need to figure out how to make sure it finds one though.
+    
+    1. Approach pallet
+    2. Detect if item on forks
+    3. Lift up forks
     """
-    picks a item upp safe
-    """
-    pass
+    forks_inserted = False
+
+    while not forks_inserted:
+        robot.run(15)
+        if touch_sensor.pressed():
+            robot.run_time(speed=5, time=200, then=Stop.BRAKE, wait=True)
+            forks_inserted = True
+       
+    crane_drive.run_angle(speed=15, rotation_angle=30, then=Stop.HOLD, wait=True)
+    if touch_sensor.pressed():
+        return True
+    else:
+        return False
 
 
 def leave_area():
@@ -53,7 +72,7 @@ def leave_area():
     pass
 
 
-def get_color_object(ev3: EV3Brick, available_colors: List(Color)) -> Color:
+def get_color_object(ev3: EV3Brick, available_colors: list(Color)) -> Color:
     """ask the user for the color of object
     """
     choosen_color = None
@@ -83,7 +102,7 @@ def main():
         Port.A, positive_direction=Direction.CLOCKWISE, gears=[14, 36])
     robot = DriveBase(left_drive, right_drive,
                       wheel_diameter=47, axle_track=128)
-    front_button = TouchSensor(Port.S1)
+    touch_sensor = TouchSensor(Port.S1)
     light_sensor = ColorSensor(Port.S3)
     ultrasonic_sensor = UltrasonicSensor(Port.S4)
 
@@ -97,7 +116,7 @@ def main():
     while run:
 
         follow_line(speed, light_sensor, color, robot)
-        collision_dedector(robot, ultrasonic_sensor, collision_distance, ev3)
+        collision_detector(robot, ultrasonic_sensor, collision_distance, ev3)
 
         if Button.CENTER in ev3.buttons.pressed():
             run = False

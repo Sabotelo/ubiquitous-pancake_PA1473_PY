@@ -1,10 +1,9 @@
 #!/usr/bin/env pybricks-micropython
 
-from turtle import speed
+from typing import Tuple
 from pybricks import robotics
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (
-    Motor, TouchSensor, ColorSensor, UltrasonicSensor)
+from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor, UltrasonicSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
@@ -14,13 +13,25 @@ import sys
 import __init__
 
 
-def follow_line(speed: int, light_sensor: ColorSensor, color: Color, robot: DriveBase) -> None:
+def follow_line(speed: int, color_sensor: ColorSensor, color: Color, robot: DriveBase, angle_tup:Tuple) -> None:
 
-    if light_sensor.color() == color:
-        robot.drive(speed, -45)
+    if color_sensor.color() == color:
+        robot.drive(speed, angle_tup[0])
+
     else:
-        robot.drive(speed, 45)
+        robot.drive(speed, angle_tup[1])
     return
+
+
+def straighten_up(speed: int, color_sensor: ColorSensor, color: Color, robot: DriveBase):
+    robot.reset()
+
+    while -robot.distance() < 100:
+        if color_sensor.color() == color:
+            robot.drive(-speed, -30)
+        else:
+            robot.drive(-speed, 40)
+
 
 
 def collision_detector(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_distance: int, ev3: EV3Brick) -> None:
@@ -41,11 +52,11 @@ def move_to_pallet():
 
 
 def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase):
-    """Function for inserting and lifting forks. 
+    """Function for inserting and lifting forks.
     Returns True if pallet is loaded, otherwise False.
 
     Will currently just drive until it finds a pallet. Still need to figure out how to make sure it finds one though.
-    
+
     1. Approach pallet
     2. Detect if item on forks
     3. Lift up forks
@@ -53,12 +64,15 @@ def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBas
     forks_inserted = False
 
     while not forks_inserted:
-        robot.run(15)
+        # robot.run(15)
         if touch_sensor.pressed():
-            robot.run_time(speed=5, time=200, then=Stop.BRAKE, wait=True)
+            robot.straight(80)
             forks_inserted = True
-       
-    crane_drive.run_angle(speed=15, rotation_angle=30, then=Stop.HOLD, wait=True)
+            # crane_drive.run(100)
+    print("Out of loop")
+
+    crane_drive.run_angle(speed=15, rotation_angle=30,
+                          then=Stop.HOLD, wait=True)
     if touch_sensor.pressed():
         return True
     else:
@@ -88,7 +102,6 @@ def get_color_object(ev3: EV3Brick, available_colors: list(Color)) -> Color:
                 return color
 
     ev3.screen.clear()
-    return get_color_object(ev3, available_colors)
 
 
 def main():
@@ -99,28 +112,39 @@ def main():
     right_drive = Motor(
         Port.B, positive_direction=Direction.COUNTERCLOCKWISE, gears=[12, 20])
     crane_drive = Motor(
-        Port.A, positive_direction=Direction.CLOCKWISE, gears=[14, 36])
+        Port.A, positive_direction=Direction.COUNTERCLOCKWISE, gears=[14, 36])
+
     robot = DriveBase(left_drive, right_drive,
                       wheel_diameter=47, axle_track=128)
     touch_sensor = TouchSensor(Port.S1)
-    light_sensor = ColorSensor(Port.S3)
+    color_sensor = ColorSensor(Port.S3)
     ultrasonic_sensor = UltrasonicSensor(Port.S4)
 
-    color = Color.YELLOW
+    color = Color.RED
     run = True
     speed = 70
+    stright = False
     collision_distance = 200
     available_colors = [Color.BLACK, Color.BLUE,
                         Color.BROWN, Color.RED, Color.YELLOW]
 
     while run:
 
-        follow_line(speed, light_sensor, color, robot)
+        ev3.screen.print(color_sensor.color())
+        if color_sensor.color() == Color.BLACK and not stright:
+            straighten_up(speed, color_sensor, color, robot)
+
+        else:
+            follow_line(speed, color_sensor, color, robot, (-45, 50))
+
         collision_detector(robot, ultrasonic_sensor, collision_distance, ev3)
 
         if Button.CENTER in ev3.buttons.pressed():
             run = False
 
+        if touch_sensor.pressed():
+            wait(1000)
+            pickup_pallet(crane_drive, touch_sensor, robot)
     return 0
 
 

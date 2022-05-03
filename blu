@@ -1,0 +1,12 @@
+    # if color_sensor.reflection() < 40:
+    #     left_drive.run(reflection_diff * 7)
+    #     right_drive.run(reflection_diff * 2)
+    # else:
+    #     left_drive.run(reflection_diff * 7)
+    #     right_drive.run(reflection_diff * 2)
+    # if color_sensor.reflection() > 70:
+    #     left_drive.run(0)
+    #     right_drive.run(100)
+    # elif color_sensor.reflection() < 20:
+    #     left_drive.run(100)
+    #     right_drive.run(0)

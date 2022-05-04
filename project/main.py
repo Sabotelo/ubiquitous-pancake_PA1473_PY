@@ -14,6 +14,7 @@ def follow_line(turn_rate: int, color_sensor: ColorSensor, robot: DriveBase, ang
         robot.drive(turn_rate, angle_tup[1])
 
     else:
+
         robot.drive(0, angle_tup[0])
 
 
@@ -42,8 +43,7 @@ def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBas
             robot.straight(80)
             forks_inserted = True
     print("Out of loop")
-
-    crane_drive. run_time(45, 1000, then=Stop.HOLD, wait=True)
+    #crane_drive.track_target(-300) funkar
 
     if touch_sensor.pressed():
         return True

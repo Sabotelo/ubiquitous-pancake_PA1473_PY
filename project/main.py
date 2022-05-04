@@ -33,6 +33,12 @@ def collision_detector(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_dis
         wait(10)
     return
 
+# def blueblack_loading_area(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase):
+#     while touch_sensor.pressed() is False:
+#         #do things
+#     return pickup_pallet(crane_drive, touch_sensor, robot)
+
+
 
 def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase):
 
@@ -101,7 +107,10 @@ def main():
 
         collision_detector(robot, ultrasonic_sensor, collision_distance, ev3)
 
+        if ColorSensor.color() is color.BLACK:
+            while touch_sensor.pressed() is False:
 
+            crane_drive.track_target(300)
 
         if Button.CENTER in ev3.buttons.pressed():
             run = False

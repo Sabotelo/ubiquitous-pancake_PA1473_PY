@@ -10,3 +10,34 @@
     # elif color_sensor.reflection() < 20:
     #     left_drive.run(100)
     #     right_drive.run(0)
+
+    """
+
+        if light_sensor.color() is Color.BLACK:
+            while touch_sensor.pressed() is False:
+                robot.straight(400)#forward
+                robot.stop()
+                wait(500)
+                robot.straight(-100)#reverse
+                robot.stop()
+                wait(500)
+                robot.turn(90)
+                robot.straight(200)#turn to check right
+                wait(500)
+                robot.turn(-90)
+                robot.straight(100)
+                wait(5000)
+            crane_drive.track_target(-300)
+
+
+
+            
+
+    lift_power = 10
+    crane_drive.reset_angle(0)
+    while crane_drive.angle() < 45:
+        print("Power", lift_power, "gives angle", crane_drive.angle())
+        crane_drive.dc(lift_power)
+        wait(250)
+        lift_power += 9
+    crane_drive.hold()"""

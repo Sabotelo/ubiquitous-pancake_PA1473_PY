@@ -31,7 +31,14 @@
 
 
 
-            
+
+  forks_inserted = False
+
+    while not forks_inserted:
+        if touch_sensor.pressed():
+            robot.straight(80)
+            forks_inserted = True
+    print("Out of loop")
 
     lift_power = 10
     crane_drive.reset_angle(0)

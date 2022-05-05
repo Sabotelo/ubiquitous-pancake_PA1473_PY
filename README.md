@@ -16,3 +16,4 @@
 - [X]Specify what color of object that the truck shall collect
 - [ ]Exit the specified area in a safe manner.
 - [X]Have a truck pickup an item (pallet)
+- []Have a truck follow a specified path from multiple options.

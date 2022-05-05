@@ -7,40 +7,43 @@ from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
 from pybricks.media.ev3dev import SoundFile, ImageFile
 
+
 import sys
 
-def follow_line(turn_rate: int, color_sensor: ColorSensor, robot: DriveBase, angle_tup:tuple) -> None:
-    if color_sensor.reflection() < 85:
-        robot.drive(turn_rate, angle_tup[1])
+
+def follow_line(turn_rate_left: int, turn_rate_right: int, color_sensor: ColorSensor, robot: DriveBase, angle_tup: tuple) -> None:
+    if sum(color_sensor.rgb()) < 105:
+        robot.drive(turn_rate_left, angle_tup[1])
 
     else:
+        robot.drive(turn_rate_right, angle_tup[0])
 
-        robot.drive(0, angle_tup[0])
 
+def follow_line_reflect(turn_rate_left: int, turn_rate_right: int, color_sensor: ColorSensor, robot: DriveBase, angle_tup: tuple) -> None:
+    if color_sensor.reflection() < 75:
+        robot.drive(turn_rate_left, angle_tup[1])
 
-def turn(left_drive: Motor, right_drive: Motor, robot: DriveBase, ev3: EV3Brick):
-    robot.straight(100)
-    print("dfdgdf")
+    else:
+        robot.drive(turn_rate_right, angle_tup[0])
 
-    return
+def follow_line_color(turn_rate_left: int, turn_rate_right: int, color_sensor: ColorSensor, robot: DriveBase, angle_tup: tuple,colors:list(Color)) -> None:
+    if color_sensor.reflection() in colors:
+        robot.drive(turn_rate_left, angle_tup[1])
 
+    else:
+        robot.drive(turn_rate_right, angle_tup[0])
 
 def collision_detector(robot: DriveBase, ultra_sensor: UltrasonicSensor, min_distance: int, ev3: EV3Brick) -> None:
     while ultra_sensor.distance() < min_distance:
         ev3.screen.clear()
         ev3.screen.print("Get out")
+        wait(400)
         robot.stop()
         wait(10)
     return
 
-# def blueblack_loading_area(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase):
-#     while touch_sensor.pressed() is False:
-#         #do things
-#     return pickup_pallet(crane_drive, touch_sensor, robot)
 
-
-
-def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase):
+def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBase)-> bool:
 
     forks_inserted = False
 
@@ -49,7 +52,8 @@ def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBas
             robot.straight(80)
             forks_inserted = True
     print("Out of loop")
-    #crane_drive.track_target(-300) funkar
+
+    crane_drive.track_target(200)
 
     if touch_sensor.pressed():
         return True
@@ -57,68 +61,134 @@ def pickup_pallet(crane_drive: Motor, touch_sensor: TouchSensor, robot: DriveBas
         return False
 
 
-def leave_area():
-    pass
-
-
-def get_color_object(ev3: EV3Brick, available_colors: list(Color)) -> Color:
+def get_color_object(ev3: EV3Brick, available_colors: list(Color)) -> list(Color):
     choosen_color = None
+
     for color in available_colors:
         ev3.screen.clear()
-        ev3.screen.print("Press down for: \n"+str(color)[
-                         6:]+"\nPress up to\ncontinue")
+        ev3.screen.print("Down for: \n"+str(color)[6:])
+        ev3.screen.print("\nPress up to\ncontinue")
         wait(500)
 
         while Button.UP not in ev3.buttons.pressed():
             if Button.DOWN in ev3.buttons.pressed():
                 ev3.screen.clear()
-                return color
+                if color== Color.BLACK:
+                    return [Color.WHITE,Color.BROWN,Color.YELLOW,Color.RED]
+                if color == Color.PURPLE:
+                    return [Color.WHITE,Color.BROWN,Color.PURPLE,Color.BLUE]
+                return [color,Color.WHITE,Color.BROWN]
 
     ev3.screen.clear()
 
 
 def main():
+
     ev3 = EV3Brick()
+    #classMotor(port, positive_direction=Direction.CLOCKWISE, gears=None)
+    left_drive = Motor(Port.C, Direction.COUNTERCLOCKWISE, [12, 20])
+    right_drive = Motor(Port.B, Direction.COUNTERCLOCKWISE, [12, 20])
+    crane_drive = Motor(Port.A, Direction.CLOCKWISE, [14, 36])
 
-    left_drive = Motor(
-        Port.C, positive_direction=Direction.COUNTERCLOCKWISE, gears=[12, 20])
-    right_drive = Motor(
-        Port.B, positive_direction=Direction.COUNTERCLOCKWISE, gears=[12, 20])
-    crane_drive = Motor(
-        Port.A, positive_direction=Direction.COUNTERCLOCKWISE, gears=[14, 36])
-
-    robot = DriveBase(left_drive, right_drive,
-                      wheel_diameter=47, axle_track=128)
+    #classDriveBase(left_motor, right_motor, wheel_diameter, axle_track)
+    robot = DriveBase(left_drive, right_drive, 47, 128)
     touch_sensor = TouchSensor(Port.S1)
     light_sensor = ColorSensor(Port.S3)
     ultrasonic_sensor = UltrasonicSensor(Port.S4)
 
-    color = Color.RED
-    run = True
-    turn_rate = 70
-    path_colors = [Color.GREEN,Color.WHITE]
+    # there is no Pink
+    # 0 = No Colour
+    # 1 = Black
+    # 2 = Blue
+    # 3 = Green
+    # 4 = Yellow
+    # 5 = Red
+    # 6 = White
+    # 7 = Brown
+
+    available_colors = [Color.BROWN, Color.BLUE,
+                        Color.RED, Color.GREEN, Color.PURPLE, Color.ORANGE,Color.BLACK]
     collision_distance = 200
+    run = True
+    turn_rate = 40
+
+
+    path_colors = get_color_object(ev3, available_colors)
+    crane_drive.reset_angle(0)
 
     while run:
 
-        #ev3.screen.print(light_sensor.color())
+        print(sum(light_sensor.rgb()))
 
-        follow_line(turn_rate, light_sensor, robot, (-30, 45))
+
+        """
+        blue
+        (8,29,39)
+        (8,19,20)
+        (8,20,23)
+
+        brown
+        (12,13,5)
+
+        Green
+        (7,25,5)
+        (7,31,7)
+        (7,28,8)
+
+        Purpuley
+        (9,9,18)
+        (7,6,10)
+        (7,7,15)
+
+        pink
+        (48,16,16)
+        (53,16,14)
+        (43,15,15)
+
+        Yellow
+        (43,37,4)
+        (39,34,4)
+
+        """
+
+        rgb_color= sum(light_sensor.rgb())
+        color = light_sensor.color()
+        angles1 =(-45, 30)
+        angles2 =(30, 30)
+        turn_rate2=turn_rate+50
+
+        print(light_sensor.color())
+
+        if color is None or light_sensor.color() in path_colors:
+
+            if color is Color.BLUE and rgb_color < 40 and Color.PURPLE in path_colors:
+               follow_line(turn_rate, 0, light_sensor, robot, angles1)
+
+            elif color is Color.BLUE and rgb_color > 40:
+                follow_line(turn_rate, 0, light_sensor, robot, angles1)
+            elif color is not Color.BLUE:
+                follow_line(turn_rate, 0, light_sensor, robot, angles1)
+            else:
+                follow_line(turn_rate2, turn_rate2, light_sensor, robot, angles2)
+
+        else:
+
+            follow_line(turn_rate+50, turn_rate+50, light_sensor, robot, (30, 30))
 
         collision_detector(robot, ultrasonic_sensor, collision_distance, ev3)
 
-        if ColorSensor.color() is color.BLACK:
-            while touch_sensor.pressed() is False:
+        if touch_sensor.pressed():
+            robot.stop()
+            crane_drive.track_target(200)
+            robot.turn(250)
 
-            crane_drive.track_target(300)
-
-        if Button.CENTER in ev3.buttons.pressed():
-            run = False
-
+        if Button.LEFT in ev3.buttons.pressed():
+            robot.stop()
+            path_colors = get_color_object(ev3, available_colors)
         if Button.UP in ev3.buttons.pressed():
-            print("fdss")
-            wait(5)
-            print("fdssfsd")
+
+            robot.stop()
+            wait(100)
             pickup_pallet(crane_drive, touch_sensor, robot)
             wait(1000)
 

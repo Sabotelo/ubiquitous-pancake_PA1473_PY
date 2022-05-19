@@ -133,26 +133,25 @@ def main():
             if color is Color.BLUE and rgb_color_green < 16 and Color.PURPLE in path_colors:
                 follow_line(turn_rate, 0, light_sensor,
                             robot, angles1)
-                operation = "Follow purple\n path"
+                operation = "Follow \npurple\n path"
             elif color is Color.BLUE and rgb_color_green > 16 and Color.PURPLE in path_colors:
-                follow_line(turn_rate+50, turn_rate+50,
+                follow_line(turn_rate2, turn_rate2,
                             light_sensor, robot, (30, 30))
 
             elif color is Color.BLUE and rgb_color_green > 16 and not Color.PURPLE in path_colors:
                 follow_line(turn_rate, 0, light_sensor,
                             robot, angles1)
-                operation = "Follow blue\n path"
+                operation = "Follow \nblue\n path"
 
             elif color is Color.BLUE and rgb_color_green < 16 and not Color.PURPLE in path_colors:
-                follow_line(turn_rate+50, turn_rate+50,
+                follow_line(turn_rate2, turn_rate2,
                             light_sensor, robot, (30, 30))
             else:
                 follow_line(turn_rate, 0, light_sensor,robot, angles1)
-                operation = f"Follow {str(color)[6:]}\n path"
 
         else:
 
-            follow_line(turn_rate+50, turn_rate+50, light_sensor,robot, (30, 30))
+            follow_line(turn_rate2, turn_rate2, light_sensor,robot, (30, 30))
         if operation.split(" ")[1] == "BROWN":
             ev3.screen.print("Looking for\na path")
 
